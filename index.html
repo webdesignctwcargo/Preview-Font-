@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Font Preview</title>
+<style>
+:root{
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#f6f5f2;--surface:#fff;--ink:#1d1d1f;--muted:#6b6b72;--line:#dcdad4;--accent:#1f5eff;--accent-ink:#fff;--ok:#1a7f45;--warn:#a05a00;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141416;--surface:#1d1d20;--ink:#f0f0f2;--muted:#9a9aa3;--line:#33333a;--accent:#6c9bff;--accent-ink:#0b1020;--ok:#4cc27f;--warn:#e0a24a}}
+:root[data-theme="dark"]{--bg:#141416;--surface:#1d1d20;--ink:#f0f0f2;--muted:#9a9aa3;--line:#33333a;--accent:#6c9bff;--accent-ink:#0b1020;--ok:#4cc27f;--warn:#e0a24a}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI","Leelawadee UI",Tahoma,sans-serif}
+.app{display:grid;grid-template-columns:320px 1fr;min-height:100vh;max-width:1280px;margin:0 auto}
+aside{border-right:1px solid var(--line);padding:16px;display:flex;flex-direction:column;gap:10px;max-height:100vh;position:sticky;top:0;overflow:hidden}
+main{padding:20px;display:flex;flex-direction:column;gap:16px;min-width:0}
+h1{font-size:18px;margin:0}
+.head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.lang{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.lang button{border:0;border-radius:0;min-height:34px;padding:4px 12px;background:var(--surface);font-weight:600}
+.lang button[aria-pressed=true]{background:var(--accent);color:var(--accent-ink)}
+label{font-size:13px;color:var(--muted);display:block;margin-bottom:4px}
+input,select,textarea,button{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-height:40px}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible,.item:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+input[type=text],textarea{width:100%}
+textarea{resize:vertical;min-height:84px}
+button{cursor:pointer}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.list{overflow:auto;flex:1;border:1px solid var(--line);border-radius:8px;background:var(--surface);min-height:120px}
+.item{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;border-bottom:1px solid var(--line);cursor:pointer;font-size:18px}
+.item:last-child{border-bottom:0}
+.item[aria-selected=true]{background:color-mix(in srgb,var(--accent) 14%,var(--surface));box-shadow:inset 3px 0 var(--accent)}
+.tag{font:12px system-ui,sans-serif;color:var(--muted);white-space:nowrap}
+.tag.ok{color:var(--ok)}.tag.warn{color:var(--warn)}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:end}
+.row>div{flex:1;min-width:140px}
+.size{display:flex;gap:8px;align-items:center}
+.size input[type=range]{flex:1;min-height:auto;padding:0;border:0;background:none}
+.size input[type=number]{width:76px}
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:24px;min-height:260px;overflow:auto;overflow-wrap:anywhere;white-space:pre-wrap;line-height:1.35}
+.meta{font-size:13px;color:var(--muted)}
+.note{font-size:13px;color:var(--muted);margin:0}
+.inspect{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.inspect-head{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 8px 8px 14px;border-bottom:1px solid var(--line);font-size:13px;color:var(--muted)}
+.inspect pre{margin:0;padding:14px;overflow-x:auto;font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--ink);white-space:pre}
+.inspect dl{margin:0;padding:10px 14px;border-top:1px solid var(--line);display:grid;grid-template-columns:auto 1fr;gap:2px 16px;font-size:13px}
+.inspect dt{color:var(--muted)}.inspect dd{margin:0;overflow-wrap:anywhere}
+.tok-sum{margin:0;padding:10px 14px;font-size:13px;border-bottom:1px solid var(--line)}
+.tok-wrap{max-height:320px;overflow:auto}
+.tok-wrap table{width:100%;border-collapse:collapse;font-size:13px}
+.tok-wrap th,.tok-wrap td{text-align:left;padding:6px 14px;border-bottom:1px solid var(--line);white-space:nowrap}
+.tok-wrap th{position:sticky;top:0;background:var(--surface);color:var(--muted);font-weight:500}
+.tok-wrap tr.hit{background:color-mix(in srgb,var(--accent) 14%,var(--surface))}
+.tok-wrap td.warn{color:var(--warn)}
+.tok-wrap code{font:12px ui-monospace,Menlo,Consolas,monospace}
+.tok-wrap button{min-height:30px;padding:2px 10px}
+.inspect-head select{min-height:34px;padding:4px 8px}
+.cmp{border-top:1px solid var(--line);padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.cmp-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.cmp-sub{margin:0;font-size:13px;color:var(--muted)}
+.chk{display:flex;gap:6px;align-items:center;margin:0;color:var(--ink);cursor:pointer}
+.chk input{min-height:auto;width:16px;height:16px;padding:0}
+.cmp-grid{display:grid;grid-template-columns:1fr;gap:12px}
+.cmp-lab{font-size:13px;font-weight:600;color:var(--ink)}
+.cmp-info{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:1px 10px;white-space:nowrap}
+.cmp-card{border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.cmp-card-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 14px;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--ink) 4%,var(--surface))}
+.cmp-box{padding:16px;overflow:visible;white-space:pre-wrap;overflow-wrap:anywhere;background-color:var(--surface);background-origin:content-box;background-clip:content-box}
+.cmp-css{margin:0;font:12px/1.5 ui-monospace,Menlo,Consolas,monospace;overflow-x:auto;white-space:pre;color:var(--ink)}
+@media (max-width:820px){.cmp-grid{grid-template-columns:1fr}}
+@media (max-width:820px){
+  .app{grid-template-columns:1fr}
+  aside{position:static;max-height:none;border-right:0;border-bottom:1px solid var(--line)}
+  .list{max-height:260px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside>
+    <div class="head">
+      <h1>Font Preview</h1>
+      <div class="lang" role="group" aria-label="Language / ภาษา / 语言">
+        <button type="button" id="langTH" aria-pressed="true">TH</button>
+        <button type="button" id="langEN" aria-pressed="false">EN</button>
+        <button type="button" id="langZH" aria-pressed="false">CN</button>
+      </div>
+    </div>
+    <div>
+      <label for="q" data-i18n="search"></label>
+      <input id="q" type="text" data-i18n-ph="searchPh" autocomplete="off">
+    </div>
+    <button id="loadAll" class="primary" type="button" data-i18n="loadAll"></button>
+    <p class="note" id="status"></p>
+    <div class="list" id="list" role="listbox" data-i18n-aria="listAria"></div>
+    <div>
+      <label for="custom" data-i18n="custom"></label>
+      <div style="display:flex;gap:6px">
+        <input id="custom" type="text" data-i18n-ph="customPh">
+        <button id="addCustom" type="button" data-i18n="add"></button>
+      </div>
+    </div>
+  <div>
+      <label data-i18n="upload"></label>
+      <input id="upFam" type="text" data-i18n-ph="upFamPh" data-i18n-aria="upFamAria" style="margin-bottom:6px">
+      <div style="display:flex;gap:6px">
+        <select id="upWeight" data-i18n-aria="upWeightAria"><option value="" data-i18n="upWeightAuto"></option><option value="300">300</option><option value="400">400</option><option value="500">500</option><option value="700">700</option><option value="900">900</option></select>
+        <button id="uploadBtn" type="button" data-i18n="uploadBtn" style="flex:1"></button>
+      </div>
+      <input id="fileIn" type="file" accept=".ttf,.otf,.woff,.woff2" multiple hidden>
+    </div>
+  </aside>
+
+  <main>
+    <div>
+      <label for="text" data-i18n="text"></label>
+      <textarea id="text"></textarea>
+    </div>
+    <div class="row">
+      <div>
+        <label for="font" data-i18n="font"></label>
+        <select id="font" style="width:100%"></select>
+      </div>
+      <div>
+        <label for="size" data-i18n="size"></label>
+        <div class="size">
+          <input id="size" type="range" min="8" max="200" value="48">
+          <input id="sizeNum" type="number" min="8" max="400" value="48" data-i18n-aria="sizeAria">
+        </div>
+      </div>
+      <div>
+        <label for="weight" data-i18n="weight"></label>
+        <select id="weight" style="width:100%">
+          <option value="300">Light (300)</option>
+          <option value="400" selected>Regular (400)</option>
+          <option value="500">Medium (500)</option>
+          <option value="700">Bold (700)</option>
+          <option value="900">Black (900)</option>
+        </select>
+      </div>
+      <div style="flex:0 0 auto;min-width:0">
+        <label for="italic" data-i18n="italicLabel"></label>
+        <button id="italic" type="button" aria-pressed="false" data-i18n="italicBtn"></button>
+      </div>
+    </div>
+    <div class="stage" id="stage"></div>
+    <div class="meta" id="meta"></div>
+    <section class="inspect" data-i18n-aria="inspectAria">
+      <div class="inspect-head"><span>Inspect CSS</span><button id="copyCss" type="button" data-i18n="copy"></button></div>
+      <pre id="cssCode"></pre>
+      <dl id="cssComputed"></dl>
+    </section>
+    <section class="inspect" id="tokens" hidden>
+      <div class="inspect-head"><span data-i18n="tokTitle"></span><select id="tokGroup" data-i18n-aria="tokGroupAria"><option value="" data-i18n="tokAll"></option><option value="Display">Display</option><option value="Head">Head</option><option value="Title">Title</option><option value="Body">Body</option></select></div>
+      <p class="tok-sum" id="tokSum"></p>
+      <div class="tok-wrap" id="tokWrap"><table><thead><tr><th data-i18n="tokName"></th><th data-i18n="tokSize"></th><th data-i18n="tokWeight"></th><th data-i18n="tokLH"></th><th></th></tr></thead><tbody id="tokBody"></tbody></table></div>
+      <div class="cmp">
+        <div class="cmp-head"><strong data-i18n="cmpTitle"></strong><label class="chk"><input type="checkbox" id="cmpLH"><span data-i18n="cmpLH"></span></label></div>
+        <p class="cmp-sub" data-i18n="cmpSub"></p>
+        <div><label for="cnFont" data-i18n="cnFont"></label><input id="cnFont" type="text" value='"PingFang SC","Microsoft YaHei","Noto Sans SC",sans-serif'></div>
+        <div class="cmp-grid">
+          <div class="cmp-card"><div class="cmp-card-head"><span class="cmp-lab" data-i18n="cmpThEn"></span><span class="cmp-info" id="cmpAi"></span></div><div class="cmp-box" id="cmpA"></div></div>
+          <div class="cmp-card"><div class="cmp-card-head"><span class="cmp-lab" data-i18n="cmpCn"></span><span class="cmp-info" id="cmpBi"></span></div><div class="cmp-box" id="cmpB"></div></div>
+        </div>
+        <pre class="cmp-css" id="cmpCss"></pre>
+      </div>
+      <p class="note" style="padding:8px 14px" data-i18n="tokNote"></p>
+    </section>
+  </main>
+</div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var SAMPLE={
+    th:"สวัสดีชาวโลก The quick brown fox jumps over the lazy dog 0123456789",
+    en:"The quick brown fox jumps over the lazy dog 0123456789 สวัสดีชาวโลก",
+    zh:"你好，世界！The quick brown fox jumps over the lazy dog 0123456789"
+  };
+  var I={
+    th:{cmpTitle:'Typography Comparison',cmpSub:'เปรียบเทียบ EN/TH กับ CN ตามขนาดจริง (1rem = 16px)',cmpLH:'แสดง line height ข้อความ',cnFont:'Font stack ภาษาจีน (ใช้ต่อท้าย DB Heavent)',cmpThEn:'EN / TH · DB Heavent',cmpCn:'CN · DB Heavent + ฟอนต์จีน',cmpLHLabel:'line-height',
+      search:"ค้นหาฟอนต์",searchPh:"เช่น Tahoma, Sarabun",loadAll:"โหลดฟอนต์ทั้งหมดในเครื่อง",listAria:"รายการฟอนต์",
+      custom:"เพิ่มชื่อฟอนต์เอง",customPh:"ชื่อฟอนต์ที่ติดตั้งในเครื่อง",add:"เพิ่ม",text:"ข้อความ",font:"ฟอนต์",
+      size:"ขนาด (px)",sizeAria:"ขนาดตัวเลข",weight:"น้ำหนัก",italicLabel:"ตัวเอียง",italicBtn:"เอียง",
+      inspectAria:"CSS ของฟอนต์",copy:"คัดลอก CSS",copied:"คัดลอกแล้ว",installed:"มีในเครื่อง",missing:"ไม่พบ",
+      missingOpt:" (ไม่พบในเครื่อง)",fallback:" · ไม่พบฟอนต์นี้ในเครื่อง ระบบจึงแสดงด้วยฟอนต์สำรอง",
+      dbOk:"พบฟอนต์ DB Heavent ในเครื่อง",dbMissing:"ยังไม่พบ DB Heavent ในเครื่อง กรุณาติดตั้งฟอนต์ก่อนจึงจะแสดงผลถูกต้อง",
+      loaded:function(n){return "โหลดฟอนต์ในเครื่องแล้ว "+n+" ฟอนต์"},
+      unsupported:"เบราว์เซอร์นี้ไม่อนุญาตให้อ่านฟอนต์ทั้งหมด (ใช้ Chrome หรือ Edge บนคอมพิวเตอร์ และอนุญาตสิทธิ์) ตอนนี้แสดงรายการฟอนต์ยอดนิยมที่ตรวจพบ คุณเพิ่มชื่อฟอนต์เองได้",
+      fs:"font-size (คำนวณ)",lh:"line-height (คำนวณ)",fw:"font-weight (คำนวณ)",ls:"letter-spacing",chars:"จำนวนตัวอักษร",
+      tokTitle:'เทียบกับ Design tokens (DB Heavent)',tokGroupAria:'กรองกลุ่ม token',tokAll:'ทุกกลุ่ม',tokName:'Token',tokSize:'ขนาด',tokWeight:'น้ำหนัก',tokLH:'line-height',tokApply:'ใช้',
+      tokMatch:function(n){return 'ตรงกับ token: '+n},
+      tokClosest:function(o){return 'ไม่มี token ที่ตรงกับค่าปัจจุบัน ใกล้เคียงที่สุดคือ '+o.n+' (ค่าปัจจุบันต่างจาก token: ขนาด '+sgn(o.ds)+'px, น้ำหนัก '+sgn(o.dw)+')'},
+      tokNote:'token ชุด normal บางกลุ่มมี font-weight เป็น undefined ในไฟล์ต้นฉบับ ซึ่งไม่ใช่ค่า CSS ที่ถูกต้อง จึงใช้ 400 ในการเทียบ',
+      upload:'อัปโหลดฟอนต์จากเครื่อง (.ttf .otf .woff .woff2)',upFamPh:'ชื่อ family (ไม่บังคับ เช่น DB Heavent)',upFamAria:'ชื่อ family ของฟอนต์ที่อัปโหลด',upWeightAria:'น้ำหนักของไฟล์ที่อัปโหลด',upWeightAuto:'น้ำหนัก: ใช้ได้ทุกค่า',uploadBtn:'เลือกไฟล์ฟอนต์...',uploadedTag:'อัปโหลด',
+      upOk:function(n){return 'เพิ่มฟอนต์ที่อัปโหลดแล้ว '+n+' ไฟล์ (เก็บไว้ชั่วคราวในหน้านี้เท่านั้น)'},
+      upFail:function(n){return 'อ่านไฟล์ฟอนต์ไม่ได้: '+n}},
+    en:{cmpTitle:'Typography Comparison',cmpSub:'Compare EN/TH with CN at actual size (1rem = 16px)',cmpLH:'Show text line height',cnFont:'Chinese font stack (appended after DB Heavent)',cmpThEn:'EN / TH · DB Heavent',cmpCn:'CN · DB Heavent + Chinese font',cmpLHLabel:'line-height',
+      search:"Search fonts",searchPh:"e.g. Tahoma, Sarabun",loadAll:"Load all fonts on this device",listAria:"Font list",
+      custom:"Add a font by name",customPh:"Name of an installed font",add:"Add",text:"Text",font:"Font",
+      size:"Size (px)",sizeAria:"Size as a number",weight:"Weight",italicLabel:"Italic",italicBtn:"Italic",
+      inspectAria:"Font CSS",copy:"Copy CSS",copied:"Copied",installed:"Installed",missing:"Not found",
+      missingOpt:" (not installed)",fallback:" · This font is not installed on this device, so a fallback font is shown",
+      dbOk:"DB Heavent is installed on this device",dbMissing:"DB Heavent was not found on this device. Install the font to see it rendered correctly",
+      loaded:function(n){return "Loaded "+n+" font families from this device"},
+      unsupported:"This browser does not allow reading all fonts (use Chrome or Edge on desktop and grant permission). Showing popular fonts that were detected instead. You can add a font by name.",
+      fs:"font-size (computed)",lh:"line-height (computed)",fw:"font-weight (computed)",ls:"letter-spacing",chars:"Characters",
+      tokTitle:'Compare with design tokens (DB Heavent)',tokGroupAria:'Filter token group',tokAll:'All groups',tokName:'Token',tokSize:'Size',tokWeight:'Weight',tokLH:'Line height',tokApply:'Apply',
+      tokMatch:function(n){return 'Matches token: '+n},
+      tokClosest:function(o){return 'No token matches the current settings. Closest is '+o.n+' (current vs token: size '+sgn(o.ds)+'px, weight '+sgn(o.dw)+')'},
+      tokNote:'Some normal-style tokens have font-weight: undefined in the source file, which is not valid CSS. They are treated as 400 for comparison.',
+      upload:'Upload fonts from this device (.ttf .otf .woff .woff2)',upFamPh:'Family name (optional, e.g. DB Heavent)',upFamAria:'Family name for the uploaded font',upWeightAria:'Weight of the uploaded file',upWeightAuto:'Weight: any',uploadBtn:'Choose font files...',uploadedTag:'Uploaded',
+      upOk:function(n){return 'Added '+n+' uploaded font file(s). They are kept in this page only for now.'},
+      upFail:function(n){return 'Could not read font file: '+n}},
+    zh:{cmpTitle:'Typography Comparison',cmpSub:'按实际尺寸对比 EN/TH 与 CN（1rem = 16px）',cmpLH:'显示文本行高',cnFont:'中文字体栈（接在 DB Heavent 之后）',cmpThEn:'EN / TH · DB Heavent',cmpCn:'CN · DB Heavent + 中文字体',cmpLHLabel:'行高',
+      search:'搜索字体',searchPh:'例如 Tahoma、Sarabun',loadAll:'加载本机所有字体',listAria:'字体列表',
+      custom:'按名称添加字体',customPh:'已安装字体的名称',add:'添加',text:'文本',font:'字体',
+      size:'字号 (px)',sizeAria:'字号数值',weight:'字重',italicLabel:'斜体',italicBtn:'斜体',
+      inspectAria:'字体 CSS',copy:'复制 CSS',copied:'已复制',installed:'已安装',missing:'未找到',
+      missingOpt:'（未安装）',fallback:' · 此设备未安装该字体，当前显示的是备用字体',
+      dbOk:'本机已安装 DB Heavent 字体',dbMissing:'本机未找到 DB Heavent。请先安装该字体，才能正确显示',
+      loaded:function(n){return '已加载本机 '+n+' 个字体族'},
+      unsupported:'此浏览器不允许读取全部字体（请在电脑上使用 Chrome 或 Edge 并授予权限）。目前显示的是检测到的常用字体，你也可以按名称添加字体。',
+      fs:'font-size（计算值）',lh:'line-height（计算值）',fw:'font-weight（计算值）',ls:'letter-spacing',chars:'字符数',
+      tokTitle:'与设计令牌对比 (DB Heavent)',tokGroupAria:'筛选令牌分组',tokAll:'全部分组',tokName:'令牌',tokSize:'字号',tokWeight:'字重',tokLH:'行高',tokApply:'应用',
+      tokMatch:function(n){return '匹配令牌：'+n},
+      tokClosest:function(o){return '没有与当前设置匹配的令牌，最接近的是 '+o.n+'（当前值与令牌之差：字号 '+sgn(o.ds)+'px，字重 '+sgn(o.dw)+'）'},
+      tokNote:'部分 normal 令牌在源文件中的 font-weight 为 undefined，这不是有效的 CSS 值，对比时按 400 处理。',
+      upload:'从本机上传字体 (.ttf .otf .woff .woff2)',upFamPh:'字体族名称（可选，如 DB Heavent）',upFamAria:'上传字体的字体族名称',upWeightAria:'上传文件的字重',upWeightAuto:'字重：任意',uploadBtn:'选择字体文件...',uploadedTag:'已上传',
+      upOk:function(n){return '已添加 '+n+' 个上传的字体文件（目前仅保存在此页面中）'},
+      upFail:function(n){return '无法读取字体文件：'+n}}
+  };
+  var lang="th";
+  var nl=navigator.language||"";lang=/^th/i.test(nl)?"th":/^zh/i.test(nl)?"zh":"en";
+  try{var sv=localStorage.getItem("fp-lang");if(sv==="en"||sv==="th"||sv==="zh")lang=sv}catch(e){}
+  function t(k,a){var s=I[lang][k];return typeof s==="function"?s(a):s}
+
+  var DB="DB Heavent";
+  var base=["DB Heavent","DB HeaventRounded","Tahoma","Leelawadee UI","Leelawadee","TH Sarabun New","Sarabun","Noto Sans Thai","Angsana New","Browallia New","Cordia New","Thonburi","Ayuthaya","Krungthep","Sukhumvit Set","Arial","Helvetica","Helvetica Neue","Segoe UI","Verdana","Georgia","Times New Roman","Courier New","Trebuchet MS","Impact","Comic Sans MS","Menlo","Consolas","SF Pro Text","Roboto","Ubuntu"];
+  var fonts=[],current=DB,italic=false,statusKey="",statusArg,lh=null,tokKey="";
+
+  var ctx=document.createElement("canvas").getContext("2d");
+  var probe="สวัสดี mmmmmwwwiiiiAaBb123ฟหกด";
+  function w(f){ctx.font="72px "+f;return ctx.measureText(probe).width}
+  var bases=["monospace","serif","sans-serif"],baseW=bases.map(w);
+  function isInstalled(n){return bases.some(function(b,i){return w('"'+n+'",'+b)!==baseW[i]})}
+  function add(n){
+    if(!n||fonts.some(function(f){return f.name===n}))return;
+    fonts.push({name:n,installed:isInstalled(n)});
+  }
+  function sortFonts(){
+    fonts.sort(function(a,b){
+      if(a.name===DB)return -1;if(b.name===DB)return 1;
+      if(!!a.uploaded!==!!b.uploaded)return a.uploaded?-1:1;
+      if(a.installed!==b.installed)return a.installed?-1:1;
+      return a.name.localeCompare(b.name);
+    });
+  }
+  function setStatus(k,a){statusKey=k;statusArg=a;$("status").textContent=k?t(k,a):""}
+
+  function render(){
+    var q=$("q").value.trim().toLowerCase();
+    var list=$("list");list.innerHTML="";
+    fonts.filter(function(f){return !q||f.name.toLowerCase().indexOf(q)>-1}).forEach(function(f){
+      var d=document.createElement("div");
+      d.className="item";d.tabIndex=0;d.setAttribute("role","option");
+      d.setAttribute("aria-selected",f.name===current);
+      d.style.fontFamily='"'+f.name+'",system-ui,sans-serif';
+      var s=document.createElement("span");s.textContent=f.name;
+      var tg=document.createElement("span");tg.className="tag "+(f.installed?"ok":"warn");
+      tg.textContent=f.uploaded?t("uploadedTag"):(f.installed?t("installed"):t("missing"));
+      d.appendChild(s);d.appendChild(tg);
+      var pick=function(){choose(f.name)};
+      d.onclick=pick;
+      d.onkeydown=function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();pick()}};
+      list.appendChild(d);
+    });
+    var sel=$("font");sel.innerHTML="";
+    fonts.forEach(function(f){
+      var o=document.createElement("option");o.value=f.name;
+      o.textContent=f.name+(f.installed?"":t("missingOpt"));
+      if(f.name===current)o.selected=true;sel.appendChild(o);
+    });
+  }
+
+  function apply(){
+    var st=$("stage"),size=$("sizeNum").value;
+    st.textContent=$("text").value;
+    st.style.fontFamily='"'+current+'",system-ui,sans-serif';
+    st.style.fontSize=size+"px";
+    st.style.fontWeight=$("weight").value;
+    st.style.fontStyle=italic?"italic":"normal";
+    st.style.lineHeight=lh?lh+"px":"";
+    updateCss();
+    renderTokens();
+    renderCmp();
+    var f=fonts.filter(function(x){return x.name===current})[0];
+    $("meta").textContent=current+" · "+size+"px"+(f&&!f.installed?t("fallback"):"");
+  }
+  function updateCss(){
+    var st=$("stage"),cs=getComputedStyle(st);
+    $("cssCode").textContent=".text {\n  font-family: \""+current+"\", system-ui, sans-serif;\n  font-size: "+$("sizeNum").value+"px;\n  font-weight: "+$("weight").value+";\n  font-style: "+(italic?"italic":"normal")+";\n  line-height: "+(lh?lh+"px":"1.35")+";\n}";
+    var rows=[[t("fs"),cs.fontSize],[t("lh"),cs.lineHeight],[t("fw"),cs.fontWeight],[t("ls"),cs.letterSpacing],[t("chars"),String($("text").value.length)]];
+    var dl=$("cssComputed");dl.innerHTML="";
+    rows.forEach(function(r){
+      var a=document.createElement("dt");a.textContent=r[0];
+      var b=document.createElement("dd");b.textContent=r[1];
+      dl.appendChild(a);dl.appendChild(b);
+    });
+  }
+  var CMP={a:'สวัสดีชาวโลก\nThe quick brown fox 0123456789',b:'你好，世界！\n汉字排版示例 0123456789'};
+  function renderCmp(){
+    if(current!==DB&&current!==DB2)return;
+    var size=+$('sizeNum').value,lhpx=lh||Math.round(size*1.35*100)/100,show=$('cmpLH').checked;
+    var rem=+(size/16).toFixed(3),cn=$('cnFont').value.trim()||'sans-serif',fam='"'+current+'",';
+    var band='color-mix(in srgb,var(--accent) 16%,transparent)';
+    [[$('cmpA'),fam+'system-ui,sans-serif',CMP.a],[$('cmpB'),fam+cn,CMP.b]].forEach(function(b){
+      var el=b[0];el.textContent=b[2];
+      el.style.fontFamily=b[1];el.style.fontSize=size+'px';el.style.fontWeight=$('weight').value;
+      el.style.fontStyle=italic?'italic':'normal';el.style.lineHeight=lhpx+'px';
+      el.style.backgroundImage=show?'repeating-linear-gradient(to bottom,'+band+' 0,'+band+' '+lhpx+'px,transparent '+lhpx+'px,transparent '+(lhpx*2)+'px)':'none';
+    });
+    var info=[size+'px = '+rem+'rem'];
+    if(show)info.push(t('cmpLHLabel')+' '+lhpx+'px ('+(+(lhpx/size).toFixed(3))+')');
+    ['cmpAi','cmpBi'].forEach(function(id){var p=$(id);p.innerHTML='';info.forEach(function(s){var c=document.createElement('span');c.className='chip';c.textContent=s;p.appendChild(c)})});
+    $('cmpCss').textContent='font-family: "'+current+'", '+cn+';';
+  }
+  var DB2='DB HeaventRounded',TOK=[];
+  function sgn(n){return (n>0?'+':'')+n}
+  [['Display',[58,48,40,32],[64,58,52,40],null,700,null],['Head',[48,40,32,28,20],[48,40,32,28,20],[48,40,32,20,20],900,null],['Title',[28,24],[28,24],null,700,null],['Body',[24,22,18,14],[24,22,18,14],null,700,400]].forEach(function(s){
+    ['strong','normal'].forEach(function(st){
+      [DB,DB2].forEach(function(fam){
+        s[1].forEach(function(sz,i){
+          var rd=fam===DB?s[0].toLowerCase():(s[0]==='Head'&&st==='normal'?'Round':'Rounded');
+          TOK.push({fam:fam,g:s[0],name:s[0]+'__'+st+'__'+rd+(i+1),size:sz,lh:(fam===DB&&st==='strong'&&s[3])?s[3][i]:s[2][i],w:st==='strong'?s[4]:s[5]});
+        });
+      });
+    });
+  });
+  function renderTokens(){
+    var box=$('tokens'),on=current===DB||current===DB2;
+    box.hidden=!on;if(!on)return;
+    var size=+$('sizeNum').value,wt=+$('weight').value,g=$('tokGroup').value;
+    var key=[current,size,wt,g,lh,lang].join('|');
+    if(key===tokKey)return;tokKey=key;
+    var fam=TOK.filter(function(k){return k.fam===current});
+    var hit=fam.filter(function(k){return k.size===size&&(k.w||400)===wt});
+    var score=function(k){return Math.abs(k.size-size)+Math.abs((k.w||400)-wt)/100};
+    var sum=$('tokSum');
+    if(hit.length)sum.textContent=t('tokMatch',hit.map(function(k){return k.name}).join(', '));
+    else{
+      var best=fam.slice().sort(function(a,b){return score(a)-score(b)})[0];
+      sum.textContent=t('tokClosest',{n:best.name,ds:size-best.size,dw:wt-(best.w||400)});
+    }
+    var tb=$('tokBody'),wrap=$('tokWrap'),pos=wrap.scrollTop;tb.innerHTML='';
+    fam.filter(function(k){return !g||k.g===g}).forEach(function(k){
+      var tr=document.createElement('tr');if(hit.indexOf(k)>-1)tr.className='hit';
+      [k.name,k.size+'px',k.w===null?'undefined':String(k.w),k.lh+'px'].forEach(function(c,i){
+        var td=document.createElement('td');
+        if(i===0){var cd=document.createElement('code');cd.textContent=c;td.appendChild(cd)}else td.textContent=c;
+        if(i===2&&k.w===null)td.className='warn';
+        tr.appendChild(td);
+      });
+      var td=document.createElement('td'),b=document.createElement('button');
+      b.type='button';b.textContent=t('tokApply');
+      b.onclick=function(){$('size').value=Math.min(k.size,200);$('sizeNum').value=k.size;$('weight').value=String(k.w||400);lh=k.lh;apply()};
+      td.appendChild(b);tr.appendChild(td);tb.appendChild(tr);
+    });
+    wrap.scrollTop=pos;
+  }
+  function choose(n){current=n;render();apply()}
+
+  function setLang(l,init){
+    var prev=lang;lang=l;
+    document.documentElement.lang=l==="zh"?"zh-CN":l;
+    try{localStorage.setItem("fp-lang",l)}catch(e){}
+    document.querySelectorAll("[data-i18n]").forEach(function(el){el.textContent=t(el.getAttribute("data-i18n"))});
+    document.querySelectorAll("[data-i18n-ph]").forEach(function(el){el.placeholder=t(el.getAttribute("data-i18n-ph"))});
+    document.querySelectorAll("[data-i18n-aria]").forEach(function(el){el.setAttribute("aria-label",t(el.getAttribute("data-i18n-aria")))});
+    $("langTH").setAttribute("aria-pressed",l==="th");
+    $("langEN").setAttribute("aria-pressed",l==="en");
+    $("langZH").setAttribute("aria-pressed",l==="zh");
+    var ta=$("text");
+    if(init||ta.value===SAMPLE[prev]||!ta.value)ta.value=SAMPLE[l];
+    if(statusKey)setStatus(statusKey,statusArg);
+    tokKey="";if(fonts.length){render();apply()}
+  }
+
+  $("text").oninput=apply;
+  $("font").onchange=function(){choose(this.value)};
+  $("size").oninput=function(){lh=null;$("sizeNum").value=this.value;apply()};
+  $("sizeNum").oninput=function(){
+    var v=Math.max(8,Math.min(400,+this.value||8));
+    lh=null;$("size").value=Math.min(v,200);apply();
+  };
+  $("weight").onchange=function(){lh=null;apply()};
+  $("italic").onclick=function(){
+    italic=!italic;this.setAttribute("aria-pressed",italic);
+    this.style.background=italic?"var(--accent)":"";this.style.color=italic?"var(--accent-ink)":"";apply();
+  };
+  $("q").oninput=render;
+  $("tokGroup").onchange=function(){apply()};
+  $("cmpLH").onchange=apply;
+  $("cnFont").oninput=apply;
+  $("addCustom").onclick=function(){
+    var n=$("custom").value.trim();if(!n)return;
+    add(n);sortFonts();$("custom").value="";choose(n);
+  };
+  $("custom").onkeydown=function(e){if(e.key==="Enter")$("addCustom").click()};
+  $("langTH").onclick=function(){setLang("th")};
+  $("langEN").onclick=function(){setLang("en")};
+  $("langZH").onclick=function(){setLang("zh")};
+  $("copyCss").onclick=function(){
+    var btn=this,txt=$("cssCode").textContent;
+    var done=function(){btn.textContent=t("copied");setTimeout(function(){btn.textContent=t("copy")},1500)};
+    var fb=function(){
+      var ta=document.createElement("textarea");ta.value=txt;document.body.appendChild(ta);ta.select();
+      try{document.execCommand("copy");done()}catch(e){}
+      document.body.removeChild(ta);
+    };
+    try{navigator.clipboard.writeText(txt).then(done,fb)}catch(e){fb()}
+  };
+
+  $("uploadBtn").onclick=function(){$("fileIn").click()};
+  $("fileIn").onchange=async function(){
+    var files=Array.prototype.slice.call(this.files||[]),ok=0,bad="";
+    var fam=$("upFam").value.trim(),wt=$("upWeight").value;
+    for(var i=0;i<files.length;i++){
+      var f=files[i],name=fam||f.name.replace(/\.[^.]+$/,"");
+      try{
+        var buf=await f.arrayBuffer();
+        var face=new FontFace(name,buf,wt?{weight:wt}:{});
+        await face.load();document.fonts.add(face);
+        var ex=fonts.filter(function(x){return x.name===name})[0];
+        if(ex){ex.installed=true;ex.uploaded=true}else fonts.push({name:name,installed:true,uploaded:true});
+        current=name;ok++;
+      }catch(e){bad=f.name}
+    }
+    this.value="";
+    sortFonts();tokKey="";render();apply();
+    if(bad)setStatus("upFail",bad);else if(ok)setStatus("upOk",ok);
+  };
+  $("loadAll").onclick=async function(){
+    try{
+      if(!window.queryLocalFonts)throw new Error("unsupported");
+      var all=await window.queryLocalFonts(),fam={};
+      all.forEach(function(f){fam[f.family]=1});
+      Object.keys(fam).forEach(function(n){
+        var ex=fonts.filter(function(f){return f.name===n})[0];
+        if(ex)ex.installed=true;else fonts.push({name:n,installed:true});
+      });
+      sortFonts();render();apply();
+      setStatus("loaded",Object.keys(fam).length);
+    }catch(e){setStatus("unsupported")}
+  };
+
+  base.forEach(add);sortFonts();
+  var db=fonts.filter(function(f){return f.name===DB})[0];
+  statusKey=db.installed?"dbOk":"dbMissing";
+  setLang(lang,true);
+  render();apply();setStatus(statusKey);
+})();
+</script>
+</body>
+</html>
